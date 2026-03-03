@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+
+<html>
+
+<body>
+
+    <h2>LingoLoom AI Tester</h2>
+
+    <button onclick="connect()">1. Connect</button>
+
+    <button onclick="sendMessage()">2. Send Message</button>
+
+    <ul id="messages" style="font-family: sans-serif; line-height: 1.6;"></ul>
+
+
+    <script>
+
+        let ws;
+
+        function connect() {
+
+            // Your exact live Google Cloud WebSocket URL
+
+            ws = new WebSocket("wss://lingoloom-backend-git-593839813468.europe-west1.run.app/ws/tutor");
+
+            ws.onopen = () => document.getElementById("messages").innerHTML += "<li>✅ Connected to Cloud Run!</li>";
+
+            ws.onmessage = (event) => {
+
+                let msg = JSON.parse(event.data);
+
+                if (msg.type === "text") {
+
+                    document.getElementById("messages").innerHTML += "<li>🤖 AI: " + msg.data + "</li>";
+
+                }
+
+            };
+
+            ws.onerror = (error) => console.error("WebSocket Error:", error);
+
+        }
+
+        function sendMessage() {
+
+            let message = "Hi! I am ready to start my phonics adventure.";
+
+            ws.send(message);
+
+            document.getElementById("messages").innerHTML += "<li>👤 You: " + message + "</li>";
+
+        }
+
+    </script>
+
+</body>
+
+</html>
