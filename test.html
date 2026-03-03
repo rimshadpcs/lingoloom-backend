@@ -1,58 +1,77 @@
 <!DOCTYPE html>
-
 <html>
-
+<head>
+    <title>LingoLoom System Simulator</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        #messages { list-style-type: none; padding: 0; }
+        li { margin-bottom: 10px; padding: 12px; border-radius: 8px; line-height: 1.5; }
+        .ai { background-color: #f0f8ff; border-left: 5px solid #4CAF50; }
+        .user { background-color: #f9f9f9; border-left: 5px solid #2196F3; }
+        /* Notice the styling here for your badge popup! */
+        .tool { background-color: #fff3e0; border: 3px solid black; font-weight: bold; text-align: center; } 
+        .system { color: gray; font-style: italic; }
+        input { width: 70%; padding: 10px; font-size: 16px; border-radius: 4px; border: 1px solid #ccc; }
+        button { padding: 10px 15px; font-size: 16px; cursor: pointer; border-radius: 4px; border: none; background-color: #007bff; color: white; }
+        button.connect { background-color: #28a745; margin-bottom: 15px; }
+    </style>
+</head>
 <body>
-
-    <h2>LingoLoom AI Tester</h2>
-
-    <button onclick="connect()">1. Connect</button>
-
-    <button onclick="sendMessage()">2. Send Message</button>
-
-    <ul id="messages" style="font-family: sans-serif; line-height: 1.6;"></ul>
-
+    <h2>LingoLoom Brain & Badge Simulator</h2>
+    <button class="connect" onclick="connect()">1. Connect to Cloud Run</button>
+    <br>
+    
+    <div style="display: flex; gap: 10px;">
+        <input type="text" id="chatInput" placeholder="Talk to the dinosaurs...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    
+    <ul id="messages"></ul>
 
     <script>
-
         let ws;
-
         function connect() {
-
             // Your exact live Google Cloud WebSocket URL
-
             ws = new WebSocket("wss://lingoloom-backend-git-593839813468.europe-west1.run.app/ws/tutor");
-
-            ws.onopen = () => document.getElementById("messages").innerHTML += "<li>✅ Connected to Cloud Run!</li>";
-
-            ws.onmessage = (event) => {
-
-                let msg = JSON.parse(event.data);
-
-                if (msg.type === "text") {
-
-                    document.getElementById("messages").innerHTML += "<li>🤖 AI: " + msg.data + "</li>";
-
-                }
-
+            
+            ws.onopen = () => {
+                document.getElementById("messages").innerHTML += "<li class='system'>✅ Connected to the Gemini 2.0 Brain!</li>";
             };
-
+            
+            ws.onmessage = (event) => {
+                let msg = JSON.parse(event.data);
+                
+                // 1. Handle normal AI speech
+                if (msg.type === "text") {
+                    document.getElementById("messages").innerHTML += "<li class='ai'>🦖 <b>Dinos:</b> " + msg.data + "</li>";
+                } 
+                // 2. Handle the Function/Tool Call!
+                else if (msg.type === "tool_action" && msg.action === "badge_awarded") {
+                    document.getElementById("messages").innerHTML += 
+                        "<li class='tool'>🏆 <b>SYSTEM:</b> Awarded cozy storybook badge for: " + msg.data + " <br><small>(Successfully saved to Firestore!)</small></li>";
+                }
+            };
+            
             ws.onerror = (error) => console.error("WebSocket Error:", error);
-
         }
 
         function sendMessage() {
-
-            let message = "Hi! I am ready to start my phonics adventure.";
-
+            let inputField = document.getElementById("chatInput");
+            let message = inputField.value;
+            if (!message) return;
+            
             ws.send(message);
-
-            document.getElementById("messages").innerHTML += "<li>👤 You: " + message + "</li>";
-
+            document.getElementById("messages").innerHTML += "<li class='user'>👤 <b>You:</b> " + message + "</li>";
+            inputField.value = ""; 
         }
 
+        // Allow pressing Enter to send
+        document.getElementById("chatInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
     </script>
-
 </body>
-
 </html>
