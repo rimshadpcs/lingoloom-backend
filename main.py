@@ -4,7 +4,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 import uvicorn
 
 app = FastAPI(title="LingoLoom Backend")
-
+# Testing the CI/CD pipeline
 @app.get("/")
 async def root():
     return {"message": "LingoLoom API is running! Your backend is alive."}
